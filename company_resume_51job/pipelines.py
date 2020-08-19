@@ -4,9 +4,11 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+import os
 
-import pymongo
-from scrapy.conf import settings
+from pymongo import MongoClient
+from scrapy.utils.project import get_project_settings
+settings = get_project_settings()
 
 
 class CompanyResume51JobPipeline(object):
@@ -14,7 +16,7 @@ class CompanyResume51JobPipeline(object):
         host = settings['MONGODB_HOST']
         port = settings['MONGODB_PORT']
         db_name = settings['MONGODB_DBNAME']
-        client = pymongo.MongoClient(host=host, port=port)
+        client = MongoClient(host=host, port=port)
         db = client[db_name]
         self.post = db[settings['MONGODB_DOCNAME']]
 
