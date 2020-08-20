@@ -4,6 +4,8 @@ import scrapy
 
 
 class Job51Item(scrapy.Item):
+    id = scrapy.Field()
+    url = scrapy.Field()
     name = scrapy.Field()
     co_name = scrapy.Field()
     area = scrapy.Field()
@@ -18,3 +20,4 @@ class Job51Item(scrapy.Item):
     local = scrapy.Field()
     co_url = scrapy.Field()
     co_type = scrapy.Field()
+    co_trade = scrapy.Field()

@@ -65,7 +65,8 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'company_resume_51job.pipelines.CompanyResume51JobPipeline': 300,
+   # 'company_resume_51job.pipelines.CompanyResume51JobPipeline': 300,
+   # 'crawlab.pipelines.CrawlabMongoPipeline': 888,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
