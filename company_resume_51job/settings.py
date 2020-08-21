@@ -66,7 +66,7 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'company_resume_51job.pipelines.CompanyResume51JobPipeline': 300,
-   'company_resume_51job.pipelines.EsPipeline': 300,
+   # 'company_resume_51job.pipelines.EsPipeline': 300,
    # 'crawlab.pipelines.CrawlabMongoPipeline': 888,
 }
 

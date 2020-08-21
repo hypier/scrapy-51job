@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import json
 import os
 import time
@@ -61,6 +60,8 @@ class A51jobSpider(RedisSpider):
         job = Job51Item()
         # job id
         job['id'] = os.path.basename(response.url).split(".")[0]
+        # job website
+        job['website'] = self.name
         # job time
         job['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         # job url

@@ -5,6 +5,7 @@ import scrapy
 
 class Job51Item(scrapy.Item):
     id = scrapy.Field()
+    website = scrapy.Field()
     url = scrapy.Field()
     name = scrapy.Field()
     co_name = scrapy.Field()
