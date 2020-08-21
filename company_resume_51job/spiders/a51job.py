@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import json
 import os
 import time
@@ -12,11 +13,10 @@ class A51jobSpider(RedisSpider):
     name = "51job"
     allowed_domains = ["51job.com"]
     redis_key = '51job:start_urls'
-    start_urls = ['http://www.51job.com']
 
-    # 基地址,循环城市,月薪,学历
+    # 基地址
     base_urls = 'https://search.51job.com/list/060000,000000,0100%252c2600' \
-                '%252c7500%252c7900,00,0,15000-30000,+,2,1.html?lang=c&postchannel=0000&' \
+                '%252c7500%252c7900,00,1,15000-30000,+,2,1.html?lang=c&postchannel=0000&' \
                 'workyear=03%252c04%252c05&cotype=99&degreefrom=99&jobterm=01&companysize=99' \
                 '&ord_field=0&dibiaoid=0&line=&welfare=&time{}'.format(time.strftime("%Y%m%d", time.localtime()))
 
@@ -27,7 +27,8 @@ class A51jobSpider(RedisSpider):
 
     # 基于不同的城市,工资,学历的第一页请求
     def parse(self, response):
-        yield scrapy.Request(url=self.base_urls, callback=self.page1_parse, headers={'Accept': 'application/json'})
+        yield scrapy.Request(url=self.base_urls, callback=self.page1_parse, headers={'Accept': 'application/json'},
+                             dont_filter=True)
 
     # 提取职位url,如果页码大于1,生成所有页码的请求加入队列
     def page1_parse(self, response):
@@ -60,6 +61,8 @@ class A51jobSpider(RedisSpider):
         job = Job51Item()
         # job id
         job['id'] = os.path.basename(response.url).split(".")[0]
+        # job time
+        job['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         # job url
         job['url'] = response.url
         # 职位名称
@@ -83,7 +86,7 @@ class A51jobSpider(RedisSpider):
             elif '人'.encode("utf-8").decode('utf8') in require:
                 job['num'] = require
             elif '发布'.encode("utf-8").decode('utf8') in require:
-                job['time'] = require
+                job['pub_time'] = require.replace('发布'.encode("utf-8").decode('utf8'), '')
             else:
                 otherq = otherq + require + ' '
         job['otherq'] = otherq.strip()
@@ -97,7 +100,7 @@ class A51jobSpider(RedisSpider):
         posi_info = response.xpath(
             '//div[@class="tBorderTop_box"][1]//div[@class="bmsg job_msg inbox"]/p//text()').extract()
 
-        job['info'] = ' '.join(posi_info)
+        job['info'] = '\n'.join(posi_info)
         # 上班地址
         job['local'] = ifexists(
             response.xpath('//div[@class="tBorderTop_box"]/div[@class="bmsg inbox"]//p/text()').extract())

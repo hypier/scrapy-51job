@@ -14,6 +14,7 @@ class Job51Item(scrapy.Item):
     edu = scrapy.Field()
     num = scrapy.Field()
     time = scrapy.Field()
+    pub_time = scrapy.Field()
     otherq = scrapy.Field()
     welfare = scrapy.Field()
     info = scrapy.Field()

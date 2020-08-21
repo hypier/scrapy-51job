@@ -8,6 +8,8 @@ import os
 
 from pymongo import MongoClient
 from scrapy.utils.project import get_project_settings
+from elasticsearch import Elasticsearch, helpers
+
 settings = get_project_settings()
 
 
@@ -21,6 +23,27 @@ class CompanyResume51JobPipeline(object):
         self.post = db[settings['MONGODB_DOCNAME']]
 
     def process_item(self, item, spider):
-        book_info = dict(item)
-        self.post.insert(book_info)
+        job_info = dict(item)
+        self.post.insert(job_info)
+        return item
+
+
+class EsPipeline(object):
+    def __init__(self):
+        host = settings['ES_HOST']
+        port = settings['ES_PORT']
+        self.client = Elasticsearch([{"host": host, "port": port, "timeout": 1500}])
+
+    def process_item(self, item, spider):
+        job_info = dict(item)
+        db = settings['ES_INDEX']
+        table = settings['ES_TYPE']
+
+        bulks = [{
+            "_index": db,
+            "_type": table,
+            "_source": job_info
+        }]
+
+        helpers.bulk(self.client, bulks)
         return item

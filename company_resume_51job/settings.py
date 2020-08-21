@@ -66,6 +66,7 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'company_resume_51job.pipelines.CompanyResume51JobPipeline': 300,
+   'company_resume_51job.pipelines.EsPipeline': 300,
    # 'crawlab.pipelines.CrawlabMongoPipeline': 888,
 }
 
@@ -111,3 +112,8 @@ MONGODB_HOST = '127.0.0.1'
 MONGODB_PORT = 27017
 MONGODB_DBNAME = '51job'
 MONGODB_DOCNAME = 'Post-info'
+
+ES_HOST = '192.168.1.16'
+ES_PORT = 9200
+ES_INDEX = 'job_51'
+ES_TYPE = 'post-info'
