@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import uuid
+from urllib.parse import quote, unquote
 
 import scrapy
 from scrapy_redis.spiders import RedisSpider
@@ -8,27 +10,39 @@ from scrapy_redis.spiders import RedisSpider
 from company_resume_51job.items import Job51Item
 from urllib import parse
 
+from company_resume_51job.pipelines import start_redis
+
 
 class LiePinJobSpider(RedisSpider):
     name = "liepin"
     allowed_domains = ["liepin.com"]
     redis_key = 'liepin:start_urls'
 
-    # 基地址,循环城市,月薪,学历
-    base_urls = 'https://www.liepin.com/zhaopin/?dqs=040&pubTime=3&salary=15%2430&jobKind=2&key=' \
-                '&siTag=1B2M2Y8AsgTpgAmY7PhCfg%7EQOW2X0Xbppe0Z4qiqak10A' \
-                '&d_ckId=cc502ce88c9359b584e6652377441fe0&curPage=0' \
-                '&d_headId=68157ae90a6cf93bf719f88942c26881&time{}'.format(time.strftime("%Y%m%d", time.localtime()))
+    # 基地址
+    base_urls = 'https://www.liepin.com/zhaopin/?dqs=040&pubTime=3&salary=15%2430&jobKind=2&key={}&curPage=0'
+
+    keys = ['java'.encode('utf-8').decode('utf8'),
+            '架构师'.encode('utf-8').decode('utf8'),
+            '技术总监'.encode('utf-8').decode('utf8')]
+
+    def getCookie(self):
+        uid = str(uuid.uuid4())
+        suid = ''.join(uid.split('-'))
+        return {'JSESSIONID': suid, 'Domain': 'www.liepin.com', 'Path': '/'}
 
     def parse(self, response):
-        yield scrapy.Request(url=self.base_urls, callback=self.page1_parse, dont_filter=True)
+        for key in self.keys:
+            full_url = self.base_urls.format(quote(key))
+
+            yield scrapy.Request(url=full_url, callback=self.page1_parse, dont_filter=True, cookies=self.getCookie())
 
     # 提取职位url,如果页码大于1,生成所有页码的请求加入队列
     def page1_parse(self, response):
         position = response.xpath('//ul[@class="sojob-list"]//div[@class="job-info"]//h3//a/@href').extract()
         if position is not None:
             for posi_url in position:
-                yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False)
+                yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False,
+                                     cookies=self.getCookie())
 
             str_page = response.xpath('//div[@class="sojob-result "]//a[@class="last"]/@href').extract()
             if len(str_page) > 0:
@@ -42,14 +56,15 @@ class LiePinJobSpider(RedisSpider):
                         params[4] = parse.urlencode(qs, True)
                         next_url = parse.urljoin("https://www.liepin.com/zhaopin/", parse.urlunparse(params))
                         print(next_url)
-                        yield scrapy.Request(url=next_url, callback=self.pages_parse)
+                        yield scrapy.Request(url=next_url, callback=self.pages_parse, cookies=self.getCookie())
 
     # 页码大于1的页面处理函数
     def pages_parse(self, response):
         position = response.xpath('//ul[@class="sojob-list"]//div[@class="job-info"]//h3//a/@href').extract()
         if position is not None:
             for posi_url in position:
-                yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False)
+                yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False,
+                                     cookies=self.getCookie())
 
     # 职位详情页
     def detail_parse(self, response):
@@ -90,9 +105,15 @@ class LiePinJobSpider(RedisSpider):
 
         job['info'] = '\n'.join(posi_info).strip()
         # 上班地址
-        job['local'] = response.xpath('//ul[@class="new-compintro"]/li/text()').re("公司地址：(.*)")[0]
+        local = response.xpath('//ul[@class="new-compintro"]/li/text()').re("公司地址：(.*)")
+        if len(local) > 0:
+            job['local'] = local
         # 公司网址
         job['co_url'] = response.xpath('//div[@class="company-logo"]//a/@href').extract()[0]
         # 公司行业
         job['co_trade'] = response.xpath('//ul[@class="new-compintro"]/li/a/text()').extract()
         yield job
+
+
+if __name__ == '__main__':
+    start_redis('liepin')

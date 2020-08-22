@@ -4,8 +4,8 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
-import os
 
+import redis
 from pymongo import MongoClient
 from scrapy.utils.project import get_project_settings
 from elasticsearch import Elasticsearch, helpers
@@ -47,3 +47,13 @@ class EsPipeline(object):
 
         helpers.bulk(self.client, bulks)
         return item
+
+
+def start_redis(website):
+    redis_q = redis.StrictRedis(
+        connection_pool=redis.ConnectionPool(host=settings['REDIS_HOST'], port=settings['REDIS_PORT'], db=0))
+
+    redis_key = '{}:start_urls'.format(website)
+    start_urls = 'https://www.{}.com'.format(website)
+    redis_q.lpush(redis_key, start_urls)
+    redis_q.close()

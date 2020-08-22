@@ -6,6 +6,7 @@ import time
 import scrapy
 from scrapy_redis.spiders import RedisSpider
 from company_resume_51job.items import Job51Item
+from company_resume_51job.pipelines import start_redis
 
 
 class A51jobSpider(RedisSpider):
@@ -17,7 +18,7 @@ class A51jobSpider(RedisSpider):
     base_urls = 'https://search.51job.com/list/060000,000000,0100%252c2600' \
                 '%252c7500%252c7900,00,1,15000-30000,+,2,1.html?lang=c&postchannel=0000&' \
                 'workyear=03%252c04%252c05&cotype=99&degreefrom=99&jobterm=01&companysize=99' \
-                '&ord_field=0&dibiaoid=0&line=&welfare=&time{}'.format(time.strftime("%Y%m%d", time.localtime()))
+                '&ord_field=0&dibiaoid=0&line=&welfare='
 
     # 学历类别
     edu_type = ['大专'.encode('utf-8').decode('utf8'),
@@ -113,3 +114,7 @@ class A51jobSpider(RedisSpider):
         job['co_trade'] = response.xpath('//div[@class="tCompanyPage"]//div[@class="com_tag"]//p//'
                                          'span[@class="i_trade"]/following-sibling::a[1]/text()').extract()
         yield job
+
+
+if __name__ == '__main__':
+    start_redis('51job')
