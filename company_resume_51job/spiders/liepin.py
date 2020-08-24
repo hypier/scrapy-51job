@@ -76,6 +76,7 @@ class LiePinJobSpider(RedisSpider):
         job['website'] = self.name
         # job time
         job['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        job['pub_time'] = time.strftime('%m-%d', time.localtime(time.time()))
         # job url
         job['url'] = response.url
         # 职位名称
