@@ -41,7 +41,7 @@ class EsPipeline(object):
 
         bulks = [{
             "_index": db,
-            "_type": table,
+            # "_type": table,
             "_source": job_info
         }]
 
