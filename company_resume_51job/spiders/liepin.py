@@ -10,8 +10,6 @@ from scrapy_redis.spiders import RedisSpider
 from company_resume_51job.items import Job51Item
 from urllib import parse
 
-from company_resume_51job.pipelines import start_redis
-
 
 class LiePinJobSpider(RedisSpider):
     name = "liepin"
@@ -25,7 +23,10 @@ class LiePinJobSpider(RedisSpider):
             '架构师'.encode('utf-8').decode('utf8'),
             '技术总监'.encode('utf-8').decode('utf8')]
 
-    def getCookie(self):
+    def start_requests(self):
+        yield scrapy.Request(url=self.base_urls)
+
+    def get_cookie(self):
         uid = str(uuid.uuid4())
         suid = ''.join(uid.split('-'))
         return {'JSESSIONID': suid, 'Domain': 'www.liepin.com', 'Path': '/'}
@@ -34,7 +35,7 @@ class LiePinJobSpider(RedisSpider):
         for key in self.keys:
             full_url = self.base_urls.format(quote(key))
 
-            yield scrapy.Request(url=full_url, callback=self.page1_parse, dont_filter=True, cookies=self.getCookie())
+            yield scrapy.Request(url=full_url, callback=self.page1_parse, dont_filter=True, cookies=self.get_cookie())
 
     # 提取职位url,如果页码大于1,生成所有页码的请求加入队列
     def page1_parse(self, response):
@@ -42,7 +43,7 @@ class LiePinJobSpider(RedisSpider):
         if position is not None:
             for posi_url in position:
                 yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False,
-                                     cookies=self.getCookie())
+                                     cookies=self.get_cookie())
 
             str_page = response.xpath('//div[@class="sojob-result "]//a[@class="last"]/@href').extract()
             if len(str_page) > 0:
@@ -56,7 +57,7 @@ class LiePinJobSpider(RedisSpider):
                         params[4] = parse.urlencode(qs, True)
                         next_url = parse.urljoin("https://www.liepin.com/zhaopin/", parse.urlunparse(params))
                         print(next_url)
-                        yield scrapy.Request(url=next_url, callback=self.pages_parse, cookies=self.getCookie())
+                        yield scrapy.Request(url=next_url, callback=self.pages_parse, cookies=self.get_cookie())
 
     # 页码大于1的页面处理函数
     def pages_parse(self, response):
@@ -64,7 +65,7 @@ class LiePinJobSpider(RedisSpider):
         if position is not None:
             for posi_url in position:
                 yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False,
-                                     cookies=self.getCookie())
+                                     cookies=self.get_cookie())
 
     # 职位详情页
     def detail_parse(self, response):
@@ -104,7 +105,7 @@ class LiePinJobSpider(RedisSpider):
         # 职位信息
         posi_info = response.xpath('//div[@class="content content-word"]/text()').extract()
 
-        job['info'] = '\n'.join(posi_info).strip()
+        job['info'] = ''.join(posi_info).strip()
         # 上班地址
         local = response.xpath('//ul[@class="new-compintro"]/li/text()').re("公司地址：(.*)")
         if len(local) > 0:
@@ -114,7 +115,3 @@ class LiePinJobSpider(RedisSpider):
         # 公司行业
         job['co_trade'] = response.xpath('//ul[@class="new-compintro"]/li/a/text()').extract()
         yield job
-
-
-if __name__ == '__main__':
-    start_redis('liepin')

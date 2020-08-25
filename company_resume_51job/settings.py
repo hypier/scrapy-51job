@@ -65,7 +65,7 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     # 'company_resume_51job.pipelines.CompanyResume51JobPipeline': 300,
-    'company_resume_51job.pipelines.EsPipeline': 300,
+    # 'company_resume_51job.pipelines.EsPipeline': 300,
     # 'crawlab.pipelines.CrawlabMongoPipeline': 888,
 }
 
@@ -118,7 +118,7 @@ ES_INDEX = 'job_51'
 ES_TYPE = 'post-info'
 
 
-SPLASH_URL = 'http://localhost:8050'
+SPLASH_URL = 'http://192.168.1.16:8050'
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy_splash.SplashCookiesMiddleware': 723,

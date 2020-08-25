@@ -12,7 +12,7 @@ class JobSpider(RedisSpider):
 
     def start_requests(self):
         urls = [
-            "https://www.lagou.com/jobs/list_java?px=default&yx=15k-25k&city=%E9%87%8D%E5%BA%86#order"
+            "https://www.lagou.com/jobs/list_java?px=new&yx=15k-25k&city=%E9%87%8D%E5%BA%86#order"
         ]
 
         for url in urls:
@@ -39,9 +39,9 @@ class JobSpider(RedisSpider):
         job['url'] = response.url
         # 职位名称
         repo = response.xpath('//div[@class="position-content-l"]//h1//text()').extract()
-        if len(repo) <= 0:
-            print("报错了")
-            return
+        # if len(repo) <= 0:
+        #     print("报错了")
+        #     return
 
         job['name'] = response.xpath('//div[@class="position-content-l"]//h1//text()').extract()[0].strip()
         # 公司名称

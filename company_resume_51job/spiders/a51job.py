@@ -6,7 +6,6 @@ import time
 import scrapy
 from scrapy_redis.spiders import RedisSpider
 from company_resume_51job.items import Job51Item
-from company_resume_51job.pipelines import start_redis
 
 
 class A51jobSpider(RedisSpider):
@@ -25,7 +24,9 @@ class A51jobSpider(RedisSpider):
                 '本科'.encode('utf-8').decode('utf8'),
                 '硕士'.encode('utf-8').decode('utf8')]
 
-    # 基于不同的城市,工资,学历的第一页请求
+    def start_requests(self):
+        yield scrapy.Request(url=self.base_urls)
+
     def parse(self, response):
         yield scrapy.Request(url=self.base_urls, callback=self.page1_parse, headers={'Accept': 'application/json'},
                              dont_filter=True)
@@ -114,7 +115,3 @@ class A51jobSpider(RedisSpider):
         job['co_trade'] = response.xpath('//div[@class="tCompanyPage"]//div[@class="com_tag"]//p//'
                                          'span[@class="i_trade"]/following-sibling::a[1]/text()').extract()
         yield job
-
-
-if __name__ == '__main__':
-    start_redis('51job')
