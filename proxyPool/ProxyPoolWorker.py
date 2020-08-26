@@ -26,8 +26,8 @@ class ProxyPoolWorker(object):
         # 连接数据库
         self.dbmanager = ProxyDBManager()
         # 创建数据库表
-        # self.dbmanager.drop_proxy_table()
-        # self.dbmanager.create_proxy_table()
+        self.dbmanager.drop_proxy_table()
+        self.dbmanager.create_proxy_table()
 
     """ 
     把 ProxyPoolWorker 实现为单例 
