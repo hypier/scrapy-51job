@@ -1,8 +1,16 @@
-# 51job 爬虫
+# 招聘爬虫
 
-- 此爬虫采用scrapy框架，以redis作为地址缓存，以mongo作为内容存储
+## 功能
+
+- 此爬虫采用scrapy框架，以redis作为地址缓存，以ES作为内容存储
 - 可以单独启用也可以导入[crawlab](https://github.com/crawlab-team/crawlab) 平台
-- 项目启动后需要向redis中写入`51job:start_urls` list值
+
+## 爬虫
+
+- 51job
+- 猎聘
+- 拉勾：_易被反爬_
+- Boss直聘：_易被反爬_
 
 ## 截图
 

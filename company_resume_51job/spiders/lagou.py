@@ -12,7 +12,9 @@ class JobSpider(RedisSpider):
 
     def start_requests(self):
         urls = [
-            "https://www.lagou.com/jobs/list_java?px=new&yx=15k-25k&city=%E9%87%8D%E5%BA%86#order"
+            "https://www.lagou.com/jobs/list_java?px=new&yx=15k-25k&city=%E9%87%8D%E5%BA%86#order",
+            "https://www.lagou.com/jobs/list_技术总监?px=new&yx=15k-25k&city=%E9%87%8D%E5%BA%86#order",
+            "https://www.lagou.com/jobs/list_架构师?px=new&yx=15k-25k&city=%E9%87%8D%E5%BA%86#order",
         ]
 
         for url in urls:

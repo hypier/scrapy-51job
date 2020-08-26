@@ -28,6 +28,11 @@ class JobSpider(RedisSpider):
                   'application/signed-exchange;v=b3;q=0.9'
     }
 
+    cookies = {
+        "__zp_stoken__": "ad34bWChTGV48cjpDLms%2FeANRWwRFUHhBRS4qDkduJlVCLk0jQX8Vf0wINVFHOnZ5LXsSQD8JHRd%2FeDo1IiN6"
+                         "dUEuUXwWZkI4fGUKK2dAC1kNI194CWEVAAsHIxF%2BIykrKypvJn99YGxUBXJWOQ%3D%3D"
+    }
+
     # 该方法必须返回一个可迭代对象(iterable)。该对象包含了spider用于爬取的第一个Request。
     # 该方法仅仅会被Scrapy调用一次，因此您可以将其实现为生成器。
     def start_requests(self):
@@ -36,15 +41,16 @@ class JobSpider(RedisSpider):
         ]
 
         for url in urls:
-            yield SplashRequest(url, self.parse, args={'wait': 0.5, 'headers': self.headers}, dont_filter=True,
-                                splash_headers=self.headers)
+            yield SplashRequest(url, self.parse, args={'wait': 0.5, 'headers': self.headers, 'cookies': self.cookies},
+                                dont_filter=True, splash_headers=self.headers)
 
     def parse(self, response):
         sel = scrapy.Selector(response)
         links = sel.xpath("//div[@class='primary-box']/@href").extract()
         for link in links:
             url = parse.urljoin("https://www.zhipin.com", link)
-            yield SplashRequest(url, self.detail_parse, args={'wait': 1, 'headers': self.headers},
+            yield SplashRequest(url, self.detail_parse,
+                                args={'wait': 0.5, 'headers': self.headers, 'cookies': self.cookies},
                                 splash_headers=self.headers)
 
     # 职位详情页
@@ -59,8 +65,10 @@ class JobSpider(RedisSpider):
         job['pub_time'] = time.strftime('%m-%d', time.localtime(time.time()))
         # job url
         job['url'] = response.url
+        print("response.url -->", response.url)
+
         # 职位名称
-        job['name'] = response.xpath("//div[@class='info-primary']//h1/text()").extract()
+        job['name'] = response.xpath("//div[@class='info-primary']//h1/text()").extract()[0].strip()
         # 公司名称
         job['co_name'] = response.xpath("//a[@ka='job-detail-company_custompage']/text()").extract()[0]
 
