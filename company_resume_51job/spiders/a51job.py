@@ -14,10 +14,20 @@ class A51jobSpider(RedisSpider):
     redis_key = '51job:start_urls'
 
     # 基地址
-    base_urls = 'https://search.51job.com/list/060000,000000,0100%252c2600' \
-                '%252c7500%252c7900,00,1,15000-30000,+,2,1.html?lang=c&postchannel=0000&' \
-                'workyear=03%252c04%252c05&cotype=99&degreefrom=99&jobterm=01&companysize=99' \
-                '&ord_field=0&dibiaoid=0&line=&welfare='
+    urls = ['https://search.51job.com/list/060000,000000,0100%252c2600'
+            '%252c7500%252c7900,00,1,15000-30000,+,2,1.html?lang=c&postchannel=0000&'
+            'workyear=03%252c04%252c05&cotype=99&degreefrom=99&jobterm=01&companysize=99'
+            '&ord_field=0&dibiaoid=0&line=&welfare=',
+            'https://search.51job.com/list/060000,000000,0000,00,1,15000-30000,java,2,1.html?'
+            'lang=c&postchannel=0000&workyear=99&cotype=99&degreefrom=03%252c04%252c05&jobterm=99'
+            '&companysize=99&ord_field=0&dibiaoid=0&line=&welfare=',
+            'https://search.51job.com/list/060000,000000,0000,00,1,15000-30000,%e6%9e%b6%e6%9e%84%e5%b8%88'
+            ',2,1.html?lang=c&postchannel=0000&workyear=99&cotype=99&degreefrom=03%252c04%252c05&jobterm=99'
+            '&companysize=99&ord_field=0&dibiaoid=0&line=&welfare=',
+            'https://search.51job.com/list/060000,000000,0000,00,1,15000-30000,%e6%8a%80%e6%9c%af%e6%80%bb%e7%9b%91'
+            ',2,1.html?lang=c&postchannel=0000&workyear=99&cotype=99&degreefrom=03%252c04%252c05&jobterm=99'
+            '&companysize=99&ord_field=0&dibiaoid=0&line=&welfare='
+            ]
 
     # 学历类别
     edu_type = ['大专'.encode('utf-8').decode('utf8'),
@@ -25,14 +35,11 @@ class A51jobSpider(RedisSpider):
                 '硕士'.encode('utf-8').decode('utf8')]
 
     def start_requests(self):
-        yield scrapy.Request(url=self.base_urls)
+        for url in self.urls:
+            yield scrapy.Request(url=url, callback=self.parse,
+                                 headers={'Accept': 'application/json'}, dont_filter=True)
 
     def parse(self, response):
-        yield scrapy.Request(url=self.base_urls, callback=self.page1_parse, headers={'Accept': 'application/json'},
-                             dont_filter=True)
-
-    # 提取职位url,如果页码大于1,生成所有页码的请求加入队列
-    def page1_parse(self, response):
         obj = json.loads(response.text)
         position = obj["engine_search_result"]
         if position is not None:

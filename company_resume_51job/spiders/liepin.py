@@ -15,6 +15,7 @@ class LiePinJobSpider(RedisSpider):
     name = "liepin"
     allowed_domains = ["liepin.com"]
     redis_key = 'liepin:start_urls'
+    start_urls = 'http://www.liepin.com'
 
     # 基地址
     base_urls = 'https://www.liepin.com/zhaopin/?dqs=040&pubTime=3&salary=15%2430&jobKind=2&key={}&curPage=0'
@@ -23,27 +24,21 @@ class LiePinJobSpider(RedisSpider):
             '架构师'.encode('utf-8').decode('utf8'),
             '技术总监'.encode('utf-8').decode('utf8')]
 
-    def start_requests(self):
-        yield scrapy.Request(url=self.base_urls)
-
     def get_cookie(self):
         uid = str(uuid.uuid4())
         suid = ''.join(uid.split('-'))
         return {'JSESSIONID': suid, 'Domain': 'www.liepin.com', 'Path': '/'}
 
-    def parse(self, response):
+    def start_requests(self):
         for key in self.keys:
             full_url = self.base_urls.format(quote(key))
+            yield scrapy.Request(url=full_url, callback=self.parse, dont_filter=True, cookies=self.get_cookie())
 
-            yield scrapy.Request(url=full_url, callback=self.page1_parse, dont_filter=True, cookies=self.get_cookie())
-
-    # 提取职位url,如果页码大于1,生成所有页码的请求加入队列
-    def page1_parse(self, response):
+    def parse(self, response):
         position = response.xpath('//ul[@class="sojob-list"]//div[@class="job-info"]//h3//a/@href').extract()
         if position is not None:
             for posi_url in position:
-                yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, dont_filter=False,
-                                     cookies=self.get_cookie())
+                yield scrapy.Request(url=posi_url, callback=self.detail_parse, priority=1, cookies=self.get_cookie())
 
             str_page = response.xpath('//div[@class="sojob-result "]//a[@class="last"]/@href').extract()
             if len(str_page) > 0:
