@@ -14,11 +14,11 @@ from company_resume_51job.items import Job51Item
 class ZhaopinSpider(RedisSpider):
     name = 'zhilian'  # 爬虫名
     allowed_domains = ['zhaopin.com']  # 允许访问的域名
-    page_limit = 3
+    page_limit = 5
     city = 551
     salary_f = 15001
     salary_t = 25000
-    kds = ['java', r'技术总监', r'架构师']
+    kds = ['java', r'技术总监', r'架构师', r'java 技术经理']
 
     headers = {
         'authority': "fe-api.zhaopin.com",

@@ -11,10 +11,10 @@ class JobSpider(RedisSpider):
     name = 'lagou'
     allowed_domains = ['lagou.com']
 
-    page_limit = 3
+    page_limit = 5
     city = parse.quote('重庆')
     salary = '15k-25k'
-    kds = ['java', r'技术总监', r'架构师']
+    kds = ['java', r'技术总监', r'架构师', r'java 技术经理']
 
     def dupe_filter(self, url):
         from scrapy.utils import request
@@ -48,7 +48,7 @@ class JobSpider(RedisSpider):
             for x in range(1, self.page_limit + 1):
                 job_list = self.parse_page(kd, x)
                 if not job_list:
-                    break
+                    continue
 
                 for job in job_list:
                     yield job

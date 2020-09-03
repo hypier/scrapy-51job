@@ -22,7 +22,8 @@ class LiePinJobSpider(RedisSpider):
 
     keys = ['java'.encode('utf-8').decode('utf8'),
             '架构师'.encode('utf-8').decode('utf8'),
-            '技术总监'.encode('utf-8').decode('utf8')]
+            '技术总监'.encode('utf-8').decode('utf8'),
+            'java 技术经理'.encode('utf-8').decode('utf8')]
 
     def get_cookie(self):
         uid = str(uuid.uuid4())
