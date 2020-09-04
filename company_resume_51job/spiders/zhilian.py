@@ -4,10 +4,10 @@ from urllib import parse
 
 import requests
 import scrapy
-from bs4 import BeautifulSoup
 
 from scrapy_redis.spiders import RedisSpider
 
+from company_resume_51job.customer_redis_dupe_filter import dupe_filter
 from company_resume_51job.items import Job51Item
 
 
@@ -35,17 +35,6 @@ class ZhaopinSpider(RedisSpider):
         'referer': "https://sou.zhaopin.com/?p=2&jl=530&kw=java&kt=3",
         'accept-language': "zh-CN,zh;q=0.9,en;q=0.8",
     }
-
-    def dupe_filter(self, url):
-        from scrapy.utils import request
-        from scrapy.http import Request
-
-        key = "{}:{}".format(self.name, 'dupefilter')
-        req = Request(url=url)
-        result = request.request_fingerprint(req)
-        added = self.server.sadd(key, result)
-
-        return added == 0
 
     def get_ref_url(self, kd, salary_f, salary_t, city):
         return 'https://sou.zhaopin.com/?jl={}&sf={}&st={}&kw={}&kt=3'.format(city, salary_f, salary_t, parse.quote(kd))
@@ -118,7 +107,7 @@ class ZhaopinSpider(RedisSpider):
         info_list = []
         for job in info:
             job_url = job['positionURL']
-            if self.dupe_filter(job_url):
+            if dupe_filter(job_url, self.name, self.server):
                 print('重复页：%s' % job_url)
                 continue
 

@@ -4,6 +4,8 @@ import requests
 import scrapy
 from bs4 import BeautifulSoup
 from scrapy_redis.spiders import RedisSpider
+
+from company_resume_51job.customer_redis_dupe_filter import dupe_filter
 from company_resume_51job.items import Job51Item
 
 
@@ -15,17 +17,6 @@ class JobSpider(RedisSpider):
     city = parse.quote('重庆')
     salary = '15k-25k'
     kds = ['java', r'技术总监', r'架构师', r'java 技术经理']
-
-    def dupe_filter(self, url):
-        from scrapy.utils import request
-        from scrapy.http import Request
-
-        key = "{}:{}".format(self.name, 'dupefilter')
-        req = Request(url=url)
-        result = request.request_fingerprint(req)
-        added = self.server.sadd(key, result)
-
-        return added == 0
 
     def get_ref_url(self, kd, salary, city):
         return 'https://www.lagou.com/jobs/list_{}?px=new&yx={}&city={}#order&cl=false&fromSearch=true' \
@@ -85,7 +76,7 @@ class JobSpider(RedisSpider):
         info_list = []
         for job in info:
             job_url = 'https://www.lagou.com/jobs/{}.html'.format(job["positionId"])
-            if self.dupe_filter(job_url):
+            if dupe_filter(job_url, self.name, self.server):
                 print('重复页：%s' % job_url)
                 continue
 
