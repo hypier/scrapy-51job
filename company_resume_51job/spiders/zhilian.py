@@ -14,7 +14,7 @@ from company_resume_51job.items import Job51Item
 class ZhaopinSpider(RedisSpider):
     name = 'zhilian'  # 爬虫名
     allowed_domains = ['zhaopin.com']  # 允许访问的域名
-    page_limit = 5
+    page_limit = 3
     city = 551
     salary_f = 15001
     salary_t = 25000

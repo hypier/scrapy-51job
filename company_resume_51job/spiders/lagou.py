@@ -13,7 +13,7 @@ class JobSpider(RedisSpider):
     name = 'lagou'
     allowed_domains = ['lagou.com']
 
-    page_limit = 5
+    page_limit = 3
     city = parse.quote('重庆')
     salary = '15k-25k'
     kds = ['java', r'技术总监', r'架构师', r'java 技术经理']
